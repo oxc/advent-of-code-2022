@@ -1,0 +1,5 @@
+input = open('input').read()
+cals = list(sum((int(cal) for cal in elf.strip().splitlines())) for elf in input.split('\n\n'))
+cals.sort()
+solution = sum(cals[-3:])
+print(solution)

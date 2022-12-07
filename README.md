@@ -70,3 +70,40 @@ scores = {
 solution = sum(scores[line] for line in input.splitlines() if line)
 ```
 </details>
+
+## Day 3 "Rucksack Reorganization"
+
+[[Description]](https://adventofcode.com/2022/day/3) |
+[[Solutions]](https://github.com/oxc/advent-of-code-2022/tree/main/day03)
+
+<details>
+<summary>Puzzle 1</summary>
+
+```python
+def priority(item):
+  ...
+
+items = list(
+    set(line[0:int(len(line)/2)])
+        .intersection(set(line[int(len(line)/2):]))
+        .pop()
+    for line in input.splitlines()
+)
+solution = sum(priority(item) for item in items)
+```
+</details>
+
+<details>
+<summary>Puzzle 2</summary>
+
+```python
+rucksacks = list(set(line) for line in input.splitlines())
+items = list(
+    reduce(lambda acc, rucksack: acc.intersection(rucksack), group).pop()
+    for group in (
+        rucksacks[i:i+3] for i in range(0, len(rucksacks), 3)
+    )
+)
+solution = sum(priority(item) for item in items)
+```
+</details>

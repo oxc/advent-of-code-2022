@@ -156,3 +156,41 @@ solution = len(list(
 </details>
 
 
+## Day 5 "Supply Stacks"
+
+[[Description]](https://adventofcode.com/2022/day/5) |
+[[Solutions]](https://github.com/oxc/advent-of-code-2022/tree/main/day05)
+
+<details>
+<summary>Puzzle 1</summary>
+
+```python
+lines = input.splitlines()
+
+stacks = [[] for i in range(0, len(lines[0]), 4)]
+while True:
+    line = lines.pop(0)
+    crates = [line[i:i+3].strip() for i in range(0, len(line), 4)]
+    if crates[0] == '1':
+        break
+    for i, crate in enumerate(crates):
+        if crate:
+            stacks[i].append(crate.strip('[]'))
+lines.pop(0)
+
+for line in lines:
+    (amount, src, dst) = map(int, re.match('move (\d+) from (\d+) to (\d+)', line).groups())
+    stacks[dst-1][0:0] = reversed(stacks[src-1][0:amount])
+    stacks[src-1][0:amount] = []
+
+solution = ''.join((stack[0] for stack in stacks))
+```
+</details>
+
+<details>
+<summary>Puzzle 2</summary>
+
+Remove the `reversed` from puzzle1
+</details>
+
+

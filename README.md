@@ -193,4 +193,34 @@ solution = ''.join((stack[0] for stack in stacks))
 Remove the `reversed` from puzzle1
 </details>
 
+## Day 6 "Tuning Trouble"
+
+[[Description]](https://adventofcode.com/2022/day/6) |
+[[Solutions]](https://github.com/oxc/advent-of-code-2022/tree/main/day06)
+
+<details>
+<summary>Puzzle 1</summary>
+
+
+```python
+def find_marker(input, size):
+    for i in range(size, len(input)):
+        chars = set(input[i-size:i])
+        if len(chars) == size:
+            return i
+
+solution = find_marker(input, 4)
+```
+</details>
+
+<details>
+<summary>Puzzle 2</summary>
+
+```python
+solution = find_marker(input, 14)
+```
+
+(First solution was actually hardcoded to 4 ;)
+</details>
+
 

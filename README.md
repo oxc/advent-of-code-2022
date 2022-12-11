@@ -365,3 +365,159 @@ solution = max(max(check_score(x,y) for x in range(len(grid[y]))) for y in range
 </details>
 
 
+## Day 9 "Rope Bridge"
+
+[[Description]](https://adventofcode.com/2022/day/9) |
+[[Solutions]](https://github.com/oxc/advent-of-code-2022/tree/main/day09)
+
+<details>
+<summary>Puzzle 1</summary>
+
+
+```python
+class Point(object):
+    def __init__(self):
+        self.x = 0
+        self.y = 0
+
+grid = [[True]]
+H = Point()
+T = Point()
+s = Point()
+
+def grid_width():
+    return len(grid[0])
+
+def grid_height():
+    return len(grid)
+
+def grow_grid_top():
+    grid.insert(0, [False] * grid_width())
+    for point in (H, T, s):
+        point.y += 1
+
+def grow_grid_left():
+    for row in grid:
+        row.insert(0, False)
+    for point in (H, T, s):
+        point.x += 1
+
+def grow_grid_right():
+    for row in grid:
+        row.append(False)
+
+def grow_grid_bottom():
+    grid.append([False] * grid_width())
+
+commands = ((direction, int(steps)) for (direction, steps) in (line.split() for line in input.splitlines()))
+
+for (direction, steps) in commands:
+    for i in range(steps):
+        if direction == 'L':
+            if H.x == 0:
+                grow_grid_left()
+            H.x -= 1
+        elif direction == 'U':
+            if H.y == 0:
+                grow_grid_top()
+            H.y -= 1
+        elif direction == 'R':
+            if H.x == grid_width()-1:
+                grow_grid_right()
+            H.x += 1
+        elif direction == 'D':
+            if H.y == grid_height()-1:
+                grow_grid_bottom()
+            H.y += 1
+
+        xdiff = abs(H.x - T.x)
+        ydiff = abs(H.y - T.y)
+        if xdiff > 1 or ydiff > 1:
+            if xdiff > 1 or (xdiff > 0 and ydiff > 1):
+                T.x += 1 if H.x > T.x else -1
+            if ydiff > 1 or (ydiff > 0 and xdiff > 1):
+                T.y += 1 if H.y > T.y else -1
+        grid[T.y][T.x] = True
+
+solution = sum(sum(1 if grid[y][x] else 0 for x in range(len(grid[y]))) for y in range(len(grid)))
+```
+
+</details>
+
+<details>
+<summary>Puzzle 2</summary>
+
+```python
+class Point(object):
+    def __init__(self, name):
+        self.name = name
+        self.x = 0
+        self.y = 0
+
+grid = [[True]]
+H = Point('H')
+Ts = [Point(str(knot+1)) for knot in range(9)]
+s = Point('s')
+rope = [H, *Ts]
+points = [*rope, s]
+
+def grid_width():
+    return len(grid[0])
+
+def grid_height():
+    return len(grid)
+
+def grow_grid_top():
+    grid.insert(0, [False] * grid_width())
+    for point in points:
+        point.y += 1
+
+def grow_grid_left():
+    for row in grid:
+        row.insert(0, False)
+    for point in points:
+        point.x += 1
+
+def grow_grid_right():
+    for row in grid:
+        row.append(False)
+
+def grow_grid_bottom():
+    grid.append([False] * grid_width())
+
+commands = ((direction, int(steps)) for (direction, steps) in (line.split() for line in input.splitlines()))
+
+for (direction, steps) in commands:
+    for i in range(steps):
+        if direction == 'L':
+            if H.x == 0:
+                grow_grid_left()
+            H.x -= 1
+        elif direction == 'U':
+            if H.y == 0:
+                grow_grid_top()
+            H.y -= 1
+        elif direction == 'R':
+            if H.x == grid_width()-1:
+                grow_grid_right()
+            H.x += 1
+        elif direction == 'D':
+            if H.y == grid_height()-1:
+                grow_grid_bottom()
+            H.y += 1
+
+        for (h, t) in zip(rope, Ts):
+            xdiff = abs(h.x - t.x)
+            ydiff = abs(h.y - t.y)
+            if xdiff > 1 or ydiff > 1:
+                if xdiff > 1 or (xdiff > 0 and ydiff > 1):
+                    t.x += 1 if h.x > t.x else -1
+                if ydiff > 1 or (ydiff > 0 and xdiff > 1):
+                    t.y += 1 if h.y > t.y else -1
+        grid[Ts[-1].y][Ts[-1].x] = True
+
+solution = sum(sum(1 if grid[y][x] else 0 for x in range(len(grid[y]))) for y in range(len(grid)))
+```
+</details>
+
+

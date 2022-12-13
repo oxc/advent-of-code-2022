@@ -668,3 +668,70 @@ solution = len(path)
 </details>
 
 
+## Day 13 "Distress Signal"
+
+[[Description]](https://adventofcode.com/2022/day/13) |
+[[Solutions]](https://github.com/oxc/advent-of-code-2022/tree/main/day13)
+
+<details>
+<summary>Puzzle 1</summary>
+
+```python
+pairs = [[literal_eval(line) for line in pair.splitlines()] for pair in input.split('\n\n')]
+
+def in_order(a, b):
+    if isinstance(a, list):
+        if isinstance(b, list):
+            for i, j in zip(a,b):
+                res = in_order(i,j)
+                if res is not None:
+                    return res
+            return in_order(len(a), len(b))
+        return in_order(a, [b])
+    if isinstance(b, list):
+        return in_order([a], b)
+    if a == b:
+        return None
+    return a < b
+
+solution = sum(i+1 for i, pair in enumerate(pairs) if in_order(*pair))
+```
+
+</details>
+
+<details>
+<summary>Puzzle 2</summary>
+
+```python
+divider1 = [[2]]
+divider2 = [[6]]
+
+packets = [literal_eval(line) for line in input.splitlines() if line.strip()] + [divider1, divider2]
+
+def compare(a, b):
+    if isinstance(a, list):
+        if isinstance(b, list):
+            for i, j in zip(a,b):
+                res = compare(i,j)
+                if res != 0:
+                    return res
+            return compare(len(a), len(b))
+        return compare(a, [b])
+    if isinstance(b, list):
+        return compare([a], b)
+    if a == b:
+        return 0
+    return -1 if a < b else 1
+
+packet_key = cmp_to_key(compare)
+
+packets.sort(key=packet_key)
+
+decoder1 = packets.index(divider1)+1
+decoder2 = packets.index(divider2)+1
+
+solution = decoder1 * decoder2
+```
+</details>
+
+

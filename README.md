@@ -520,6 +520,87 @@ solution = sum(sum(1 if grid[y][x] else 0 for x in range(len(grid[y]))) for y in
 ```
 </details>
 
+
+## Day 10 "Cathode-Ray Tube"
+
+[[Description]](https://adventofcode.com/2022/day/10) |
+[[Solutions]](https://github.com/oxc/advent-of-code-2022/tree/main/day10)
+
+<details>
+<summary>Puzzle 1</summary>
+
+```python
+instructions = [line.split() for line in input.splitlines()]
+
+cycle = 0
+x = 1
+readings = []
+
+def next_cycle():
+    global cycle, x
+    cycle += 1
+    if cycle % 40 == 20:
+        readings.append(cycle * x)
+
+
+for instruction in instructions:
+    command = instruction.pop(0)
+    if command == 'noop':
+        next_cycle()
+        continue
+    if command == 'addx':
+        arg = int(instruction.pop(0))
+        next_cycle()
+        next_cycle()
+        x += arg
+        continue
+    raise ValueError("Unknown command: " + command)
+
+solution = sum(readings)
+```
+
+</details>
+
+<details>
+<summary>Puzzle 2</summary>
+
+```python
+instructions = [line.split() for line in input.splitlines()]
+
+cycle = 0
+x = 1
+lines = [['.' for x in range(40)] for y in range(6)]
+
+def next_cycle():
+    global cycle
+
+    pixel = cycle % 40 
+    if pixel in range(x-1, x+2):
+        line = cycle // 40
+        lines[line][pixel] = '#'
+    
+    cycle += 1
+
+for instruction in instructions:
+    command = instruction.pop(0)
+    if command == 'noop':
+        next_cycle()
+        continue
+    if command == 'addx':
+        arg = int(instruction.pop(0))
+        next_cycle()
+        next_cycle()
+        x += arg
+        continue
+    raise ValueError("Unknown command: " + command)
+
+solution = '\n'.join(''.join(line) for line in lines)
+
+print(solution)
+```
+</details>
+
+
 ## Day 12 "Hill Climbing Algorithm"
 
 [[Description]](https://adventofcode.com/2022/day/12) |

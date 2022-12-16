@@ -986,4 +986,142 @@ solution = resting_sand
 ```
 </details>
 
+## Day 15 "Beacon Exclusion Zone"
+
+[[Description]](https://adventofcode.com/2022/day/15) |
+[[Solutions]](https://github.com/oxc/advent-of-code-2022/tree/main/day15)
+
+<details>
+<summary>Puzzle 1</summary>
+
+This one is not very efficient :(
+
+```python
+class Point(object):
+    def __init__(self, x, y, type = '.'):
+        self.x = x
+        self.y = y
+        self.type = type
+
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
+
+    def __hash__(self):
+        return 31 * hash(self.x) + hash(self.y)
+
+    def __str__(self):
+        return self.type
+
+    def __repr__(self):
+        return f"({self.x},{self.y})"
+
+    def distance(self, other):
+        return abs(self.x - other.x) + abs(self.y - other.y)
+
+re_line = re.compile(r'Sensor at x=(-?\d+), y=(-?\d+): closest beacon is at x=(-?\d+), y=(-?\d+)')
+
+pairs = [
+    (Point(m[0], m[1]), Point(m[2], m[3])) for m in (
+        tuple(int(c) for c in g) for g in (re_line.match(line).groups() for line in input.splitlines())
+    )
+]
+pairs_with_distance = [(p1, p2, p1.distance(p2)) for p1, p2 in pairs]
+min_x = min(p1.x - distance for p1, p2, distance in pairs_with_distance)
+max_x = max(p1.x + distance for p1, p2, distance in pairs_with_distance)
+
+
+def impossible_sensor_spots_in_row(y):
+    spots = dict()
+
+    for sensor, beacon in pairs:
+        distance = sensor.distance(beacon)
+        if not (sensor.y - distance <= y <= sensor.y + distance):
+            continue
+
+        for x in range(sensor.x - distance, sensor.x + distance + 1):
+            p = Point(x, y)
+            if p in spots:
+                p = spots[p]
+            if sensor.x == x and sensor.y == y:
+                p.type = 'S'
+            elif beacon.x == x and beacon.y == y:
+                p.type = 'B'
+            elif sensor.distance(p) <= distance and p.type == '.':
+                p.type = '#'
+            else:
+                continue
+            spots[p] = p
+
+    return sum(1 if p.type == '#' else 0 for p in spots.values())
+
+solution = impossible_sensor_spots_in_row(2000000)
+```
+
+</details>
+
+<details>
+<summary>Puzzle 2</summary>
+
+This one is not very efficient :(
+
+```python
+class Point(object):
+    def __init__(self, x, y, type = '.'):
+        self.x = x
+        self.y = y
+        self.type = type
+
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
+
+    def __hash__(self):
+        return 31 * hash(self.x) + hash(self.y)
+
+    def __str__(self):
+        return self.type
+
+    def __repr__(self):
+        return f"({self.x},{self.y})"
+
+    def distance(self, x, y):
+        return abs(self.x - x) + abs(self.y - y)
+
+re_line = re.compile(r'Sensor at x=(-?\d+), y=(-?\d+): closest beacon is at x=(-?\d+), y=(-?\d+)')
+
+pairs = [
+    (Point(m[0], m[1]), Point(m[2], m[3])) for m in (
+        tuple(int(c) for c in g) for g in (re_line.match(line).groups() for line in input.splitlines())
+    )
+]
+pairs_with_distance = [(p1, p2, p1.distance(p2.x, p2.y)) for p1, p2 in pairs]
+
+
+def find_free(searchArea = 4000000):
+    for y in range(searchArea):
+        x = 0
+        while x < searchArea:
+            for sensor, beacon, distance in pairs_with_distance:
+                if sensor.x == x and sensor.y == y:
+                    break
+                elif beacon.x == x and beacon.y == y:
+                    break
+                if not (sensor.y - distance <= y <= sensor.y + distance):
+                    continue
+                y_distance = abs(sensor.y - y)
+                x_distance = distance - y_distance
+                if sensor.x - x_distance <= x <= sensor.x + x_distance:
+                    x = sensor.x + x_distance
+                    break
+            else:
+                return Point(x, y)
+
+            x += 1
+
+
+free = find_free()
+solution = free.x * 4000000 + free.y
+```
+</details>
+
+
 

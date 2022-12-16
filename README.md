@@ -600,6 +600,27 @@ print(solution)
 ```
 </details>
 
+## Day 11 "Monkey in the Middle"
+
+[[Description]](https://adventofcode.com/2022/day/11) |
+[[Solutions]](https://github.com/oxc/advent-of-code-2022/tree/main/day11)
+
+<details>
+<summary>Puzzle 1</summary>
+
+```python
+```
+
+</details>
+
+<details>
+<summary>Puzzle 2</summary>
+
+```python
+```
+</details>
+
+
 
 ## Day 12 "Hill Climbing Algorithm"
 
@@ -1120,6 +1141,205 @@ def find_free(searchArea = 4000000):
 
 free = find_free()
 solution = free.x * 4000000 + free.y
+```
+</details>
+
+
+## Day 16 "Proboscidea Volcanium"
+
+[[Description]](https://adventofcode.com/2022/day/16) |
+[[Solutions]](https://github.com/oxc/advent-of-code-2022/tree/main/day16)
+
+<details>
+<summary>Puzzle 1</summary>
+
+```python
+re_valve = re.compile(r'Valve (\w+) has flow rate=(\d+); tunnels? leads? to valves? (.*)')
+
+
+valves = { m[0]: (int(m[1]), set(v.strip() for v in m[2].split(','))) for m in
+           (re_valve.match(line).groups() for line in input.splitlines()) }
+
+
+def find_paths(path, pressure_released, seen_valves_while_moving, open_valves, current_valve):
+    minutes_remaining = 30 - len(path)
+
+    if minutes_remaining == 0:
+        yield pressure_released
+        return
+
+    flow_rate, next_valves = valves[current_valve]
+    if flow_rate > 0 and current_valve not in open_valves:
+        yield from find_paths(
+            [*path, f'open {current_valve}'],
+            pressure_released + flow_rate*(minutes_remaining-1),
+            set(),
+            open_valves.union({current_valve}),
+            current_valve
+        )
+
+    if minutes_remaining == 1:
+        yield pressure_released
+        return
+
+    for next_valve in next_valves:
+        if next_valve in seen_valves_while_moving:
+            continue
+        yield from find_paths(
+            [*path, f'move to {next_valve}'],
+            pressure_released,
+            seen_valves_while_moving.union({current_valve}),
+            open_valves,
+            next_valve
+        )
+
+paths = list(set(find_paths([], 0, set(), set(), 'AA')))
+
+paths.sort(reverse=True)
+
+solution = paths[0]
+```
+
+</details>
+
+<details>
+<summary>Puzzle 2</summary>
+
+This one runs for ages, but at least it should terminate with my resources
+(as opposed to previous solution attempts) :D
+
+```python
+re_valve = re.compile(r'Valve (\w+) has flow rate=(\d+); tunnels? leads? to valves? (.*)')
+
+
+valves = { m[0]: (int(m[1]), set(v.strip() for v in m[2].split(','))) for m in
+           (re_valve.match(line).groups() for line in input.splitlines()) }
+
+flow_valves = frozenset({ k for k, v in valves.items() if v[0] > 0 })
+
+def dijkstra(source):
+    dist = {}
+    prev = {}
+    Q = set()
+    for vertex in valves.keys():
+        dist[vertex] = float('inf')
+        prev[vertex] = None
+        Q.add(vertex)
+    dist[source] = 0
+
+    while Q:
+        u = min(Q, key=dist.get)
+        Q.remove(u)
+        for v in valves[u][1]:
+            alt = dist[u] + 1
+            if alt < dist[v]:
+                dist[v] = alt
+                prev[v] = u
+
+    return dist, prev
+
+def find_shortest_paths():
+    result = {}
+    for source in valves.keys():
+        dist, prev = dijkstra(source)
+        result[source] = { k: None for k in dist.keys() }
+        for target in dist.keys():
+            u = target
+            path = []
+            while prev[u] is not None:
+                path.insert(0, u)
+                u = prev[u]
+            result[source][target] = tuple(path)
+
+    return result
+
+shortest_paths = find_shortest_paths()
+
+valve_count = len(flow_valves)
+
+NUM_ACTORS = 2
+
+def find_max_pressure(steps, open_valves, actors_states):
+    if steps % len(actors_states) == 0:
+        actors_states = tuple(sorted(actors_states, key=lambda s: s[0]))
+    pressure, path_id = _find_max_pressure(steps, open_valves, actors_states)
+    return pressure, path_id
+
+@functools.lru_cache(maxsize=15000000)
+def _find_max_pressure(steps, open_valves, actors_states):
+    minutes_elapsed = (steps // len(actors_states))+1
+    minutes_remaining = 27 - minutes_elapsed
+    actor_id = steps % len(actors_states)
+
+    if minutes_remaining == 0:
+        return 0, ''
+
+    pressure_this_step = 0
+    if actor_id == 0:
+        pressure_this_step = sum(valves[v][0] for v in open_valves)
+
+    if len(open_valves) == valve_count:
+        pressure, path_id, path = _find_max_pressure(steps+1, open_valves, actors_states)
+        return pressure + pressure_this_step, path_id
+
+    current_valve, next_steps = actors_states[actor_id]
+    if next_steps is None:
+        results = []
+
+        possible_targets = flow_valves - \
+                           open_valves - \
+                           { t[-1] for c, t in actors_states if t is not None and len(t) > 0 } - \
+                           { c for c, t in actors_states if t is not None and len(t) == 0 }
+
+        for target in sorted(possible_targets, key=lambda v: valves[v][0], reverse=True):
+            next_path = shortest_paths[current_valve][target]
+            if len(next_path) + 1 > minutes_remaining:
+                continue
+            new_state = (current_valve, next_path)
+            new_states = actors_states[:actor_id] + (new_state,) + actors_states[actor_id + 1:]
+            pressure, path_id = find_max_pressure(
+                steps,
+                open_valves,
+                new_states,
+            )
+            results.append((pressure, path_id))
+
+        if not results:
+            pressure, path_id = find_max_pressure(
+                steps+1,
+                open_valves,
+                actors_states,
+            )
+            return pressure + pressure_this_step, path_id
+
+        return max(results, key=lambda x: x[0])
+
+    if len(next_steps) == 0:
+        # open valve and set to None to select next
+        new_state = (current_valve, None)
+        new_states = actors_states[:actor_id] + (new_state,) + actors_states[actor_id + 1:]
+
+        pressure, path_id = find_max_pressure(
+            steps + 1,
+            open_valves.union({current_valve}),
+            new_states,
+        )
+        return pressure + pressure_this_step, f':{actor_id}{current_valve}' + path_id
+
+    else:
+        next_valve = next_steps[0]
+        new_state = (next_valve, next_steps[1:])
+        new_states = actors_states[:actor_id] + (new_state,) + actors_states[actor_id + 1:]
+        pressure, path_id = find_max_pressure(
+            steps + 1,
+            open_valves,
+            new_states,
+        )
+        return pressure + pressure_this_step, path_id
+
+solution, solution_path_id = find_max_pressure(0, frozenset(), tuple(('AA', None) for i in range(NUM_ACTORS)))
+print(solution_path_id)
+print(solution)
 ```
 </details>
 

@@ -2001,3 +2001,181 @@ solution = int(root.rhs)
 
 
 
+## Day 22 ""
+
+[[Description]](https://adventofcode.com/2022/day/22) |
+[[Solutions]](https://github.com/oxc/advent-of-code-2022/tree/main/day22)
+
+<details>
+<summary>Puzzle 1</summary>
+
+```python
+```
+
+</details>
+
+<details>
+<summary>Puzzle 2</summary>
+
+```python
+```
+</details>
+
+
+
+## Day 23 "Unstable Diffusion"
+
+[[Description]](https://adventofcode.com/2022/day/23) |
+[[Solutions]](https://github.com/oxc/advent-of-code-2022/tree/main/day23)
+
+<details>
+<summary>Puzzle 1</summary>
+
+```python
+class Elf(object):
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
+
+    def __hash__(self):
+        return 31 * hash(self.x) + hash(self.y)
+
+    def __repr__(self):
+        return f"({self.x},{self.y})"
+
+    def move(self, x, y):
+        self.x = x
+        self.y = y
+
+    def propose_move(self, round, elf_positions):
+        neighbours = [
+            elf_positions.get((self.x + x, self.y + y)) for x, y in (
+                (-1, -1), (0, -1), (1, -1),
+                (-1, 0), (1, 0),
+                (-1, 1), (0, 1), (1, 1)
+            )
+        ]
+        if not any(neighbours):
+            return None
+        NW, N, NE, W, E, SW, S, SE = neighbours
+        checks = [
+            ((NW, N, NE), (0, -1)),
+            ((S, SE, SW), (0, 1)),
+            ((W, NW, SW), (-1, 0)),
+            ((E, NE, SE), (1, 0)),
+        ]
+        start = round % 4
+        for check in range(start, start+4):
+            points, (dx, dy) = checks[check % 4]
+            if not any(points):
+                return self.x + dx, self.y + dy
+        return None
+
+elves = [Elf(x, y)
+         for y, line in enumerate(input.splitlines())
+         for x, c in enumerate(line)
+         if c == '#']
+
+def map_extents():
+    return (
+        min(elf.x for elf in elves), max(elf.x for elf in elves),
+        min(elf.y for elf in elves), max(elf.y for elf in elves)
+    )
+
+elf_positions = None
+for round in range(11):
+    elf_positions = {(elf.x, elf.y): elf for elf in elves}
+    proposed_positions = [elf.propose_move(round, elf_positions) for elf in elves]
+    if not any(proposed_positions):
+        break
+    position_count = Counter(proposed_positions)
+    for elf, position in zip(elves, proposed_positions):
+        if position and position_count[position] == 1:
+            elf.move(*position)
+
+x1, x2, y1, y2 = map_extents()
+solution = ((x2 - x1 + 1) * (y2 - y1 + 1)) - len(elves)
+```
+
+</details>
+
+<details>
+<summary>Puzzle 2</summary>
+
+```python
+class Elf(object):
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
+
+    def __hash__(self):
+        return 31 * hash(self.x) + hash(self.y)
+
+    def __repr__(self):
+        return f"({self.x},{self.y})"
+
+    def move(self, x, y):
+        #print(f"Elf {self} moves to {x},{y}")
+        self.x = x
+        self.y = y
+
+    def propose_move(self, round, elf_positions):
+        neighbours = [
+            elf_positions.get((self.x + x, self.y + y)) for x, y in (
+                (-1, -1), (0, -1), (1, -1),
+                (-1, 0), (1, 0),
+                (-1, 1), (0, 1), (1, 1)
+            )
+        ]
+        if not any(neighbours):
+            return None
+        NW, N, NE, W, E, SW, S, SE = neighbours
+        checks = [
+            ((NW, N, NE), (0, -1)),
+            ((S, SE, SW), (0, 1)),
+            ((W, NW, SW), (-1, 0)),
+            ((E, NE, SE), (1, 0)),
+        ]
+        start = round % 4
+        for check in range(start, start+4):
+            points, (dx, dy) = checks[check % 4]
+            if not any(points):
+                return self.x + dx, self.y + dy
+        return None
+
+elves = [Elf(x, y)
+         for y, line in enumerate(input.splitlines())
+         for x, c in enumerate(line)
+         if c == '#']
+
+def map_extents():
+    return (
+        min(elf.x for elf in elves), max(elf.x for elf in elves),
+        min(elf.y for elf in elves), max(elf.y for elf in elves)
+    )
+
+elf_positions = None
+round = 0
+while True:
+    round += 1
+    elf_positions = {(elf.x, elf.y): elf for elf in elves}
+    proposed_positions = [elf.propose_move(round-1, elf_positions) for elf in elves]
+    if not any(proposed_positions):
+        break
+    position_count = Counter(proposed_positions)
+    for elf, position in zip(elves, proposed_positions):
+        if position and position_count[position] == 1:
+            elf.move(*position)
+
+solution = round
+```
+</details>
+
+
+

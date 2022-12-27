@@ -1738,7 +1738,7 @@ solution = highest_point() + (remaining_rocks // cycle_rocks) * cycle_height
 
 
 
-## Day 18 ""
+## Day 18 "Boiling Boulders"
 
 [[Description]](https://adventofcode.com/2022/day/18) |
 [[Solutions]](https://github.com/oxc/advent-of-code-2022/tree/main/day18)
@@ -1747,6 +1747,17 @@ solution = highest_point() + (remaining_rocks // cycle_rocks) * cycle_height
 <summary>Puzzle 1</summary>
 
 ```python
+cubes = { (x, y, z) for x, y, z in (map(int, line.split(',')) for line in input.splitlines()) }
+
+def neighbors(cube):
+    x, y, z = cube
+    result = set()
+    for dx, dy, dz in (-1, 0, 0), (0, -1, 0), (0, 0, -1), (1, 0, 0), (0, 1, 0), (0, 0, 1):
+        result.add((x + dx, y + dy, z + dz))
+    return result
+
+solution = sum(6 - len(cubes.intersection(neighbors(cube))) for cube in cubes)
+
 ```
 
 </details>
@@ -1755,6 +1766,39 @@ solution = highest_point() + (remaining_rocks // cycle_rocks) * cycle_height
 <summary>Puzzle 2</summary>
 
 ```python
+cubes = { (x, y, z) for x, y, z in (map(int, line.split(',')) for line in input.splitlines()) }
+
+minx = min(x for x, y, z in cubes)-1
+maxx = max(x for x, y, z in cubes)+1
+miny = min(y for x, y, z in cubes)-1
+maxy = max(y for x, y, z in cubes)+1
+minz = min(z for x, y, z in cubes)-1
+maxz = max(z for x, y, z in cubes)+1
+
+cubes_reach_outside = set()
+
+def neighbors(cube):
+    x, y, z = cube
+    result = set()
+    for dx, dy, dz in (-1, 0, 0), (0, -1, 0), (0, 0, -1), (1, 0, 0), (0, 1, 0), (0, 0, 1):
+        rx, ry, rz = x + dx, y + dy, z + dz
+        if minx <= rx <= maxx and miny <= ry <= maxy and minz <= rz <= maxz:
+            result.add((rx, ry, rz))
+    return result
+
+# find cubes from the outside
+cubes_to_check = set().union(
+    { (x, z, y) for x in range(minx, maxx+1) for y in (miny, maxy) for z in (minz, maxz) }).union(
+    { (x, z, y) for x in (minx, maxx) for y in range(miny, maxy+1) for z in (minz, maxz) }).union(
+    { (x, z, y) for x in (minx, maxx) for y in (miny, maxy) for z in range(minz, maxz+1) })
+
+while cubes_to_check:
+    cube = cubes_to_check.pop()
+    if cube not in cubes:
+        cubes_reach_outside.add(cube)
+        cubes_to_check.update(neighbors(cube).difference(cubes_reach_outside))
+
+solution = sum(len(neighbors(cube).intersection(cubes_reach_outside)) for cube in cubes)
 ```
 </details>
 
